@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <title>OFW Hack 2015</title>
+      <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" >
+      <meta charset="utf-8">
+      <link rel="stylesheet" href="css/bootstrap.min.css" media="screen">
+	  <link rel="stylesheet" href="css/font-awesome.min.css">
+	  <link rel="stylesheet" href="css/animate.min.css">
+      <style>
+		body
+		{
+		padding-top:125px;
+		padding-bottom: 50px;
+		-webkit-transition: background 0.35s ease-in-out;
+		transition: background 0.35s ease-in-out;
+		}
+        .navbar-fixed-top .row
+		 {
+		 margin:0;
+		 padding:0;
+		 }
+		 .animated
+		 {
+		 -webkit-animation-duration: 0.55s;
+		 animation-duration: 0.55s;
+		 }
+      </style>
+   </head>
+   <body class="bg-info">
+		<div class="navbar navbar-fixed-top" style="color:#fff">
+			<div class="container-fluid" style="padding: 10px;">
+				<h4><a href="home.html" class="btn-down" style="color:#fff"><i class="fa fa-times fa-2x"></i></a></h4>
+			</div>
+		</div>
+		<div style="background: transparent;padding:0;position:fixed;left:0;top:60%;z-index:1030;width:100%">
+		<div class="text-center">
+		<span id="panicbutton" class="fa-stack fa-5x img-circle fa-fw"style="background:#333;">
+		  <i class="fa fa-stack-2x img-circle"></i>
+		  <i class="fa fa-exclamation-triangle fa-stack-1x fa-inverse"></i>
+		</span>
+		</div>
+		</div>
+				
+		<div class="container">
+		<div class="center-block" style="max-width:700px;color:#fff;">
+		<h1 id="panicinstruction" class="text-center">Press the panic button for 3 seconds.<br><i class="fa fa-arrow-down fa-lg" style="margin-top:20px"></i></h1>
+		<div id="panicloading" style="display:none"><svg class="spinner center-block" width="65px" height="65px" viewBox="0 0 66 66">
+		   <circle class="path" fill="none" stroke-width="6" stroke-linecap="round" cx="33" cy="33" r="30" style="stroke:#fff"></circle>
+		</svg></div>
+		</div><!--center-block-->
+		</div><!--container-fluid-->
+      <script src="js/jquery-1.11.2.min.js"></script>
+      <script src="js/bootstrap.min.js"></script>
+	  <script src="js/fastclick.min.js"></script>
+	  <script>
+	    var panicDown;
+		var lat = 0;
+		var lng = 0;
+		$(function()
+		{
+		//$("body").removeClass("bg-info").addClass("bg-danger");
+		getLocation();
+		});
+				
+		function getLocation()
+		{
+			if (navigator.geolocation) {
+				navigator.geolocation.getCurrentPosition(function(position){
+					lat = position.coords.latitude;
+					lng = position.coords.longitude;
+					georesponse = 1;
+				});
+			}
+			else
+			{
+				georesponse = 0;
+			}
+		}
+		
+		function donePanic()
+		{
+			$("body").removeClass("bg-danger").addClass("bg-info"); 
+			$("#panicinstruction").slideDown("fast");
+			$("#panicloading").slideUp("fast");
+		}
+		
+		$('#panicbutton').on("mousedown touchstart",function() {
+		  panicDown = setTimeout(function() {
+			$("body").removeClass("bg-info").addClass("bg-danger"); 
+			$("#panicinstruction").slideUp("fast");
+			$("#panicloading").slideDown("fast");
+			$('#panicbutton').unbind("mousedown touchstart");
+			getLocation();
+			setTimeout(function(){
+				if (georesponse == 1)
+				{
+					$.getJSON("http://imhome.iligtas.ph/panicbuttonpressed.php", {uniquekey: localStorage.getItem("imhome-uniquekey"),lat:lat,lng:lng},function(data)
+					{
+						$("#panicinstruction").html('Panic Call has been sucessfully sent to your Trackers.');
+						donePanic();
+					});
+				}
+				else
+				{
+					$("#panicinstruction").html('<h2>There\'s an error getting your location.<br>Make sure Location Services are on.</h2>');
+					donePanic();
+				}			
+			},1000);
+			//$("body").trigger("transitionandroid",["home.html","down"]);
+			/*$.getJSON("http://imhome.iligtas.ph/checklogin.php", {note:3},function(data)
+         		{
+				
+				});*/
+		  }, 2000);
+		});
+		$('#panicbutton').on("mouseup touchend",function() {
+		  if (panicDown) {
+			clearTimeout(panicDown);
+		  }
+		});
+	  </script>
+   </body>
+</html>
